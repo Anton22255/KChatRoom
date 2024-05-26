@@ -1,4 +1,4 @@
-package io.colagom.chat.usecase
+package ru.anton22255.chat.usecase
 
 interface UseCase<INPUT, OUTPUT> {
     suspend fun execute(input: INPUT): OUTPUT

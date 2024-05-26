@@ -1,7 +1,8 @@
-package io.colagom.chat.model
+package ru.anton22255.chat.model
 
 import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
+import ru.anton22255.chat.model.ChatUser
 
 /**
  * ChatRoom data class is representing a chat room.
