@@ -11,33 +11,58 @@ plugins {
     alias(libs.plugins.compose.compiler)
 }
 
+repositories {
+    mavenCentral()
+}
+
 kotlin {
-    @OptIn(ExperimentalWasmDsl::class)
-    wasmJs {
+
+    jvm {}
+//    @OptIn(ExperimentalWasmDsl::class)
+//    wasmJs {
+//        moduleName = "composeApp2"
+//        browser {
+//            commonWebpackConfig {
+//                outputFileName = "composeApp.js"
+//                devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
+//                    static = (static ?: mutableListOf()).apply {
+//                        // Serve sources to debug inside browser
+//                        add(project.projectDir.path)
+//                    }
+//                }
+//            }
+//        }
+//        binaries.executable()
+//    }
+
+    js(IR) {
         moduleName = "composeApp"
-        browser {
-            commonWebpackConfig {
-                outputFileName = "composeApp.js"
-                devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
-                    static = (static ?: mutableListOf()).apply {
-                        // Serve sources to debug inside browser
-                        add(project.projectDir.path)
-                    }
-                }
-            }
-        }
+        browser()
+//        binaries.executable()
+//        browser {
+//            commonWebpackConfig {
+//                outputFileName = "composeApp.js"
+//                devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
+//                    static = (static ?: mutableListOf()).apply {
+//                        // Serve sources to debug inside browser
+//                        add(project.projectDir.path)
+//                    }
+//                }
+//            }
+//        }
+//        binaries.executable()
         binaries.executable()
     }
-    
+
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    
+
     sourceSets {
-        
+
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
@@ -50,6 +75,19 @@ kotlin {
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
             implementation(projects.shared)
+        }
+
+        val jsMain by getting  {
+            dependencies {
+                implementation(projects.shared)
+            }
+        }
+
+        val jvmMain by getting  {
+            dependencies {
+                implementation(compose.desktop.currentOs)
+//                implementation(project(":shared"))
+            }
         }
     }
 }
@@ -91,3 +129,12 @@ android {
     }
 }
 
+compose.experimental {
+    web.application {}
+}
+
+compose.desktop {
+    application {
+        mainClass = "MainKt"
+    }
+}

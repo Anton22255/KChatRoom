@@ -9,6 +9,8 @@ import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
 import io.ktor.websocket.*
 import org.anton22255.kchatroom.Messages
+import org.anton22255.kchatroom.repository.MessageStore
+import ru.anton22255.chat.model.ChatMessage
 import ru.anton22255.chat.model.ChatRoom
 import ru.anton22255.chat.model.ChatUser
 import ru.anton22255.chat.model.request.ChatType
@@ -22,7 +24,11 @@ fun Application.configureSockets() {
         allowMethod(HttpMethod.Delete)
         allowMethod(HttpMethod.Patch)
         allowHeader(HttpHeaders.Authorization)
+        allowHeader(HttpHeaders.AccessControlAllowOrigin)
+        allowHeader("Content-Type")
+
         anyHost() //TODO: don't do this in production
+        allowHeaders { true }
     }
 
     install(WebSockets) {
@@ -35,6 +41,8 @@ fun Application.configureSockets() {
     routing {
         val chatService = Services.chat
         val sessions = Collections.synchronizedSet<UserSession>(LinkedHashSet())
+        val messagesStore = MessageStore()
+
         webSocket("/chat/{roomId}") {
             val roomId = call.parameters["roomId"]?.toLong()
             val room: ChatRoom = roomId?.let(chatService::getRoom)
@@ -48,6 +56,16 @@ fun Application.configureSockets() {
                         when (chat.type) {
                             ChatType.JOIN -> {
                                 session.user = chatService.onJoined(room.id, chat.message)
+                                messagesStore.messages.replayCache.forEach { message ->
+                                    session.socket.send(
+                                        Messages.message(
+                                            false,
+                                            session.user?.name.orEmpty(),
+                                            message.message,
+                                        )
+                                    )
+                                }
+
                                 sessions.filter { it.room.id == room.id }.forEach {
                                     it.socket.send(Messages.join(chat.message))
                                 }
@@ -68,8 +86,12 @@ fun Application.configureSockets() {
 
                                 sessions.filter { it.room.id == room.id }.forEach {
                                     val isMine = it.user?.id == session.user?.id
-                                    it.socket.send(Messages.chat(isMine, session.name, chat))
+                                    val content = Messages.chat(isMine, session.name, chat)
+                                    it.socket.send(content)
                                 }
+                                messagesStore.saveMessage(
+                                    ChatMessage(false, chat.message ?: "")
+                                )
                             }
                         }
                     }
