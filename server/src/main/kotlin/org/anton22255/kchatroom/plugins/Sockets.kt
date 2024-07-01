@@ -1,7 +1,5 @@
 package org.anton22255.kchatroom.plugins
 
-import org.anton22255.kchatroom.ext.readMessage
-import org.anton22255.kchatroom.service.Services
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.cors.routing.*
@@ -9,8 +7,9 @@ import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
 import io.ktor.websocket.*
 import org.anton22255.kchatroom.Messages
+import org.anton22255.kchatroom.ext.readMessage
 import org.anton22255.kchatroom.repository.MessageStore
-import ru.anton22255.chat.model.ChatMessage
+import org.anton22255.kchatroom.service.Services
 import ru.anton22255.chat.model.ChatRoom
 import ru.anton22255.chat.model.ChatUser
 import ru.anton22255.chat.model.request.ChatType
@@ -49,6 +48,7 @@ fun Application.configureSockets() {
                 ?: return@webSocket close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Invalid room id"))
 
             val session = UserSession(this, room)
+            messagesStore.initRoom(room)
             sessions += session
             try {
                 for (frame in incoming) {
@@ -56,10 +56,11 @@ fun Application.configureSockets() {
                         when (chat.type) {
                             ChatType.JOIN -> {
                                 session.user = chatService.onJoined(room.id, chat.message)
-                                messagesStore.messages.replayCache.forEach { message ->
+
+                                messagesStore.getHistoryFlow(room).replayCache.forEach { message ->
                                     session.socket.send(
                                         Messages.message(
-                                            false,
+                                            message.authorId == session.user?.id,
                                             session.user?.name.orEmpty(),
                                             message.message,
                                         )
@@ -90,7 +91,8 @@ fun Application.configureSockets() {
                                     it.socket.send(content)
                                 }
                                 messagesStore.saveMessage(
-                                    ChatMessage(false, chat.message ?: "")
+                                    session.room,
+                                    session.user?.id!!, chat.message ?: ""
                                 )
                             }
                         }
