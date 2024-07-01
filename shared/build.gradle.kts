@@ -1,13 +1,10 @@
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
-import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinSerialization)
-//    kotlin("plugin.serialization") version "1.8.10"
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.compose.compiler)
 }
@@ -19,20 +16,6 @@ repositories {
 kotlin {
 
     js(IR) { browser() }
-
-//    @OptIn(ExperimentalWasmDsl::class)
-//    wasmJs {
-//        browser {
-//            commonWebpackConfig {
-//                devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
-//                    static = (static ?: mutableListOf()).apply {
-//                        // Serve sources to debug inside browser
-//                        add(project.projectDir.path)
-//                    }
-//                }
-//            }
-//        }
-//    }
     
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
@@ -45,16 +28,11 @@ kotlin {
     
     sourceSets {
         commonMain.dependencies {
-//            implementation("libs.kotlinx.serialization.json")
-//            api("libs.kotlinx.serialization.json")
             implementation(compose.ui)
             implementation(compose.foundation)
             implementation(compose.material)
             @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
             implementation(compose.components.resources)
-
-//            api("libs.kotlinx.serialization.json")
-//            api("libs.kotlinx.datetime")
 
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.ktor.client.core)
@@ -76,53 +54,13 @@ kotlin {
                 implementation(libs.ktor.client.okhttp)
             }
         }
-//        val wasmJsMain by getting {
-//            dependencies {
-//                implementation(libs.io.ktor.ktor.client.js2)
-////                implementation(libs.io.ktor.ktor.client.serialization)
-//            }
-//        }
-//        val jsWasmMain by creating {
-//            dependencies {
-//                implementation(project(":shared"))
-//                implementation(compose.runtime)
-//                implementation(compose.ui)
-//                implementation(compose.foundation)
-//                implementation(compose.material)
-//                @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
-//                implementation(compose.components.resources)
-//            }
-//        }
 
         val jsMain by getting {
-//            dependsOn(jsWasmMain)
             dependencies {
                 implementation(libs.ktor.client.core)
                 implementation(libs.io.ktor.ktor.client.js2)
             }
         }
-//        val wasmJsMain by getting {
-//            dependsOn(jsWasmMain)
-//        }
-
-//        val jsWasmMain by creating {
-//            dependencies {
-//                implementation(project(":shared"))
-//                implementation(compose.runtime)
-//                implementation(compose.ui)
-//                implementation(compose.foundation)
-//                implementation(compose.material)
-//                @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
-//                implementation(compose.components.resources)
-//                implementation(libs.ktor.client.core)
-//                implementation(libs.io.ktor.ktor.client.js2)
-//            }
-//        }
-
-//        val wasmJsMain by getting {
-//            dependsOn(jsWasmMain)
-//        }
-
     }
 }
 

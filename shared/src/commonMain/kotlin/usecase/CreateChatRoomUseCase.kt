@@ -13,13 +13,7 @@ class CreateChatRoomUseCaseImpl : CreateChatRoomUseCase {
         Http.client.post("room") {
             contentType(ContentType.Application.Json)
             headers.append("Access-Control-Allow-Origin", "*")
-//            headers.append("Access-Control-Allow-Origin", "http://localhost:8080")
             headers.append("Access-Control-Allow-Credentials", "true")
-
-//            header("Access-Control-Allow-Origin", "*")
-//            headers {
-//                append("Access-Control-Allow-Origin", "*")
-//            }
             setBody(input)
         }.body()
 }

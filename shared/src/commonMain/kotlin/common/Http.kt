@@ -48,11 +48,7 @@ object Http {
                 append("Access-Control-Allow-Origin", "*")
             }
 
-            install(ContentNegotiation) {
-                json()
-//                headersOf("Access-Control-Allow-Origin", "*")
-            }
-
+            install(ContentNegotiation) { json() }
 
             defaultRequest {
                 url(HOST)
